@@ -5,7 +5,7 @@
 
 --[[
 KEY FEATURES:
-  * Featureful standalone Home Security System like commercial ones
+  * Standalone Home Security System like commercial ones
   * Born to be Easy and Fast for everyone (you can configure your full feature Home Security System within 5 minutes)
   * Arm Away (using only perimetral contact sensors to triggers alarms)
   * Arm Home (using perimetral and motion sensors to trigger alarms)
