@@ -15,8 +15,8 @@ A complete security system for Domoticz Home Automation System (http://www.domot
 #### Features
   * Standalone Home Security System like commercial ones
   * Born to be Easy and Fast for everyone (you can configure your full feature Home Security System within 5 minutes)
-  * Arm Away (using only perimetral contact sensors to triggers alarms)
-  * Arm Home (using perimetral and motion sensors to trigger alarms)
+  * Arm Home (using only perimetral contact sensors to triggers alarms)
+  * Arm Away (using perimetral and motion sensors to trigger alarms)
   * Support Siren devices when an security violation is confirmed
   * Countdown timer when Arming (so you can close the main door and exit the home before the Home Security System is Armed)
   * Countdown timer when entering home and the contact sensor get triggered, so you can Disarm the Home Security System before the Siren is turned On)
