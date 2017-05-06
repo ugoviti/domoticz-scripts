@@ -77,7 +77,7 @@ A complete security system for Domoticz Home Automation System (http://www.domot
     * Bathroom / Contact Window
     so on...
 * When done, save the edited file and go into **Setup --> Log** tab and look for errors
-* Try to **Arm Home / Arm Away / Disarm** the Home Security System clicking in the variuos states of **Alarm / Status** switch
+* Try to **Disarm / Arm Home / Arm Away** the Home Security System clicking in the variuos states of **Alarm / Status** switch
 
 ### izDomoSecurityTimer.lua
 
