@@ -1,5 +1,6 @@
 # Domoticz Personal Scripts
-Domoticz (Home Automation System) personal Bash/LUA scripts
+Domoticz (Home Automation System) personal Bash/LUA scripts <br/>
+Author: Ugo Viti <ugo.viti@initzero.it>
 
 ## Description
 This is my personal collection of self made scripts and customization for Domoticz (Open Source Home Automation System) http://www.domoticz.com
