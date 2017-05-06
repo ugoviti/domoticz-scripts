@@ -1,5 +1,5 @@
 -- izDomoSecurity System
--- A security system for Domoticz Home Automation System (http://www.domoticz.com)
+-- A complete security system for Domoticz Home Automation System (http://www.domoticz.com)
 -- author: Ugo Viti <ugo.viti@initzero.it>
 -- version: 20170506
 
