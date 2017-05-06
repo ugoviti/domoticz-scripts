@@ -29,6 +29,48 @@ A complete security system for Domoticz Home Automation System (http://www.domot
   * Notify the user during arming countdown, if any of security sensor is already breached
   * You can switch between security statuses without waiting arming timer countdown is over
 
+#### Installation
+
+  * Open your Domoticz Home Page URL address
+  * From Domoticz Home Page go into: **Setup --> Hardware** tab
+    * Create the followings new **Dummy** Hardware devices (if Dummy Hardware is not configured add it before continue):
+    * Click **Create Virtual Sensors** and insert:
+      * Name: **Alarm / Status**
+      * Sensor Type: **Selector**
+    * Click **Create Virtual Sensors** and insert:
+      * Name: **Alarm / Violated**
+      * Sensor Type: **Switch**
+    * Click **Create Virtual Sensors** and insert:
+      * Name: **Alarm / Confirmed**
+      * Sensor Type: **Switch**
+    * Click **Create Virtual Sensors** and insert:
+      * Name: **Holidays Mode**
+      * Sensor Type: **Switch**
+    * Go into **Switches** tab and EDIT the **Alarm / Status** selector switch:
+      * Selector Level 0: **Off**
+      * Selector Level 10: **ArmHome**
+      * Selector Level 20: **ArmAway**
+* If you like, I suggest to customize the switches icons
+* From Domoticz Home Page go into: **Setup --> More Options --> Events** tab
+  * Create the following LUA script:
+    * Event name: **izDomoSecuritySystem**
+    * Method: **LUA**
+    * Type: **Device**
+  * Copy&Paste the **izDomoSecuritySystem.lua** code
+* Now the most important part: customize the examples and localized variables and your sensors devices (in the example you'll find italian strings)
+  * NB. I suggest to rename your sensors devices using the following naming convention:
+    * Kitchen / Motion
+    * Kitchen / Contact Window
+    * Livin Room / Motion
+    * Livin Room / Contact Main Door
+    * Livin Room / Contact Window 1
+    * Livin Room / Contact Window 2
+    * Bathroom / Motion
+    * Bathroom / Contact Window
+    so on...
+* When done, save the edited file and go into **Setup --> Log** tab and look for errors
+* Try to **Arm Home / Arm Away / Disarm** the Home Security System clicking in the variuos states of **Alarm / Status** switch
+
 ### izDomoSecurityTimer.lua
 
 #### Description
