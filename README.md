@@ -30,8 +30,15 @@ A complete security system for Domoticz Home Automation System (http://www.domot
   * Notify the user during arming countdown, if any of security sensor is already breached
   * You can switch between security statuses without waiting arming timer countdown is over
 
-#### Installation
+#### Requirements
+  * Domoticz (of course ;))
+  * Some Contact Sensors (I use a mix of Xiaomi MiHome devices and ZWave Sensors)
+  * Some Motion Sensors
+  * One or more Sirens (I use ZWave Siren)
+  * Suggested: an Android Tablet with ImperiHome Professional (and the TTS engine enabled for voice annuncements)
+  * Otherwise izsynth installed (http://www.domoticz.com/wiki/IzSynth) and a Sound Speaker connected to the RaspberryPi domoticz 2,5 Audio Jack
 
+#### Installation
   * Open your Domoticz Home Page URL address
   * From Domoticz Home Page go into: **Setup --> Hardware** tab
     * Create the followings new **Dummy** Hardware devices (if Dummy Hardware is not configured add it before continue):
