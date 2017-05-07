@@ -10,10 +10,10 @@ This is my personal collection of self made scripts and customization for Domoti
 ### izDomoSecuritySystem.lua
 
 #### Description
-A complete security system for Domoticz Home Automation System (http://www.domoticz.com)
+A full featured Home Security System for Domoticz Home Automation System (http://www.domoticz.com)
 
 #### Features
-  * Standalone Home Security System like commercial ones
+  * Full featured Home Security System like commercial ones
   * Born to be Easy and Fast for everyone (you can configure your full feature Home Security System within 5 minutes)
   * Arm Home (using only perimetral contact sensors to triggers alarms)
   * Arm Away (using perimetral and motion sensors to trigger alarms)

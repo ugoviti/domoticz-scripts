@@ -1,11 +1,11 @@
 -- izDomoSecurity System
--- A complete security system for Domoticz Home Automation System (http://www.domoticz.com)
+-- A full featured Home Security System for Domoticz Home Automation System (http://www.domoticz.com)
 -- author: Ugo Viti <ugo.viti@initzero.it>
 -- version: 20170506
 
 --[[
 KEY FEATURES:
-  * Standalone Home Security System like commercial ones
+  * Full featured Home Security System like commercial ones
   * Born to be Easy and Fast for everyone (you can configure your full feature Home Security System within 5 minutes)
   * Arm Home (using only perimetral contact sensors to triggers alarms)
   * Arm Away (using perimetral and motion sensors to trigger alarms)
@@ -57,10 +57,15 @@ local devSensors = {
     'Contatto Test',
 }
 
+-- exclude these device to check Open state when Arming (example: Open the main entrance door, activate the Arm Away selector and close the door exiting the house)
+local devSensorsVerifyClosedExclude = {
+    'Soggiorno / Contatto Porta Entrata',
+    'Contatto Test',
+}
+
 -- domoticz security devices (you must create these virtual hardware switches before saving izDomoSecurity LUA script)
 local devAlarm = {
     -- hardware security switches
-    --Siren        = 'Antistudio / Luce',    -- Phisical Siren hardware device
     Siren        = 'Ripostiglio / Sirena', -- Phisical Siren hardware device
     -- virtual security swithces (create these devices from Domoticz Hardware Page as Dummy Devices)
     Status       = 'Allarme / Stato',      -- Virtual Hardware Type: SELECTOR (0:Off, 10:ArmHome, 20:ArmAway)
@@ -150,6 +155,7 @@ function msgtr(text,devName)
         elseif  text == 'Off'     then return ('Off')
 		-- other messages
         elseif  text == 'ALARM_ARMING_ERROR'  then return ('WARNING: Open sensor detected: '..string.gsub(devName, "/ Contact ", " "))
+        elseif  text == 'ALARM_ARMING_EXCLUDE'then return ('WARNING: Open sensor detected but excluded from the arming check: '..string.gsub(devName, "/ Contact ", " "))
         elseif  text == 'ALARM_ARMING_HOME'   then return ('Arming Home in '..alarmCountdown..' seconds')
         elseif  text == 'ALARM_ARMING_AWAY'   then return ('Arming Away in '..alarmCountdown..' seconds')
         elseif  text == 'ALARM_ARMED_HOME'    then return ('Armed Home correctly. With a total of '..#devSensors.. ' monitored sensors')
@@ -172,6 +178,7 @@ function msgtr(text,devName)
         elseif  text == 'Off'     then return ('Spento')
 		-- other messages
         elseif  text == 'ALARM_ARMING_ERROR'  then return ('ATTENZIONE: Rilevato sensore aperto: '..string.gsub(devName, "/ Contatto ", " "))
+        elseif  text == 'ALARM_ARMING_EXCLUDE'then return ('ATTENZIONE: Rilevato sensore aperto ma escluso dal check: '..string.gsub(devName, "/ Contatto ", " "))
         elseif  text == 'ALARM_ARMING_HOME'   then return ('Attivazione allarme perimetrale in '..alarmCountdown..' secondi')
         elseif  text == 'ALARM_ARMING_AWAY'   then return ('Attivazione allarme totale in '..alarmCountdown..' secondi')
         elseif  text == 'ALARM_ARMED_HOME'    then return ('Allarme perimetrale, attivato correttamente. Con un totale di '..#devSensors.. ' sensori monitorati')
@@ -239,13 +246,28 @@ function talk(text)
     end
 end
 
--- function to verify if any contact device is in an Open status
-function verifyDeviceClosed(array)
-    for id, devName in pairs(array) do
+-- function used to verify if a value is contained into an array
+local function containsVal(table, val)
+   for i=1,#table do
+      if table[i] == val then 
+         return true
+      end
+   end
+   return false
+end
+
+-- function to verify if any contact device is in an Open Status
+function verifyDeviceClosed(devIncluded,devExcluded)
+    
+    for id, devName in pairs(devIncluded) do
         if (otherdevices[devName] == 'Open') then
-            log(msgtr('ALARM_ARMING_ERROR',devName))
-            talk(msgtr('ALARM_ARMING_ERROR',devName))
-            return false -- stop the for loop to don't generate too many messages if other sensors are opened
+            if containsVal(devExcluded,devName) then
+                log(msgtr('ALARM_ARMING_EXCLUDE',devName))
+            else
+                log(msgtr('ALARM_ARMING_ERROR',devName))
+                talk(msgtr('ALARM_ARMING_ERROR',devName))
+                return false -- stop the for loop to don't generate too many messages if other sensors are opened    
+            end
         end
     end
     return true
@@ -300,6 +322,7 @@ if (devicechanged[devAlarm['Status']] == devAlarmStatus['Disarm'] and (uservaria
 	commandArray[devAlarm['Violated']] = 'Off'
 	commandArray[devAlarm['Confirmed']] = 'Off'
 	commandArray[devAlarm['Siren']] = 'Off'
+	--commandArray['Security Panel'] = 'Disarm'
 
 -- disarm from Armed State
 elseif (devicechanged[devAlarm['Status']] == devAlarmStatus['Disarm']) then
@@ -311,28 +334,31 @@ elseif (devicechanged[devAlarm['Status']] == devAlarmStatus['Disarm']) then
 	commandArray[devAlarm['Violated']] = 'Off'
 	commandArray[devAlarm['Confirmed']] = 'Off'
 	commandArray[devAlarm['Siren']] = 'Off'
+	--commandArray['Security Panel'] = 'Disarm'
     usrDisarm()
 
 -- arm home (ex. when activated by timer)
 elseif (devicechanged[devAlarm['Status']] == devAlarmStatus['ArmHome']) then
 	varAlarmStatus = 'Arming Home' -- before talking is important to use the right tts engine
     log(msgtr('ALARM_ARMING_HOME'))
-	if verifyDeviceClosed(devSensors) then talk(msgtr('ALARM_ARMING_HOME')) end
+	if verifyDeviceClosed(devSensors,devSensorsVerifyClosedExclude) then talk(msgtr('ALARM_ARMING_HOME')) end
 	commandArray['Variable:varAlarmStatus'] = varAlarmStatus
 	commandArray['Variable:varAlarmAction'] = 'Armed Home AFTER '..alarmCountdown
 	commandArray[devAlarm['Violated']] = 'Off'
 	commandArray[devAlarm['Confirmed']] = 'Off'
+	--commandArray['Security Panel'] = 'Arm Home'
     usrArmHome()
 
 -- arm away (ex. when activated manually)	
 elseif (devicechanged[devAlarm['Status']] == devAlarmStatus['ArmAway']) then
 	local varAlarmStatus = 'Arming Away' -- before talking is important to use the right tts engine
     log(msgtr('ALARM_ARMING_AWAY'))
-    if verifyDeviceClosed(devSensors) then talk(msgtr('ALARM_ARMING_AWAY')) end
+    if verifyDeviceClosed(devSensors,devSensorsVerifyClosedExclude) then talk(msgtr('ALARM_ARMING_AWAY')) end
 	commandArray['Variable:varAlarmStatus'] = varAlarmStatus
 	commandArray['Variable:varAlarmAction'] = 'Armed Away AFTER '..alarmCountdown
 	commandArray[devAlarm['Violated']] = 'Off'
 	commandArray[devAlarm['Confirmed']] = 'Off'
+	--commandArray['Security Panel'] = 'Arm Away'
     usrArmAway()
 end
 
@@ -398,3 +424,4 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
 end
 
 return commandArray
+
