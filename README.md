@@ -17,7 +17,7 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
   * Born to be Easy and Fast for everyone (you can configure your full feature Home Security System within 5 minutes)
   * Arm Home (using only perimetral contact sensors to triggers alarms)
   * Arm Away (using perimetral and motion sensors to trigger alarms)
-  * Support Siren devices when an security violation is confirmed
+  * Support Siren devices when a security violation is confirmed
   * Countdown timer when Arming (so you can close the main door and exit the home before the Home Security System is Armed)
   * Countdown timer when entering home and the contact sensor get triggered, so you can Disarm the Home Security System before the Siren is turned On)
   * Various vocal messages using a speaker connected to Domoticz Box or an Tablet with ImperiHome and TTS engine API enables
