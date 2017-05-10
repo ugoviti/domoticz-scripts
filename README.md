@@ -20,7 +20,8 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
   * Support Siren devices when a security violation is confirmed
   * Countdown timer when Arming (so you can close the main door and exit the home before the Home Security System is Armed)
   * Countdown timer when entering home and the contact sensor get triggered (so you can Disarm the Home Security System before the Siren is turned On)
-  * Various vocal messages using a speaker connected to Domoticz Box or an Tablet with ImperiHome and TTS engine API enabled
+  * Different actions when ArmHome or ArmAway. example: Turn off all house lights only when ArmAway
+  * Various vocal messages using a speakers connected to Domoticz Box or an Tablet with ImperiHome and TTS engine API enabled
     * Vocal messages when arming, disarming, security breach, siren confirmation, etc...
     * Vocal messages confirming armed state after countdown
   * Multiple and concurrent TTS engine support (ex. ArmingHome go to izsynth, ArmingAway go to ImperiHome tablet)
@@ -58,26 +59,35 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
       * Selector Level 0: **Off**
       * Selector Level 10: **ArmHome**
       * Selector Level 20: **ArmAway**
-* If you like, I suggest to customize the switches icons
-* From Domoticz Home Page go into: **Setup --> More Options --> Events** tab
-  * Create the following LUA script:
-    * Event name: **izDomoSecuritySystem**
-    * Method: **LUA**
-    * Type: **Device**
-  * Copy&Paste the **izDomoSecuritySystem.lua** code
-* Now the most important part: customize the examples and localized variables and your sensors devices (in the example you'll find italian strings)
-  * NB. I suggest to rename your sensors devices using the following naming convention:
-    * Kitchen / Motion
-    * Kitchen / Contact Window
-    * Livin Room / Motion
-    * Livin Room / Contact Main Door
-    * Livin Room / Contact Window 1
-    * Livin Room / Contact Window 2
-    * Bathroom / Motion
-    * Bathroom / Contact Window
-    so on...
-* When done, save the edited file and go into **Setup --> Log** tab and look for errors
-* Try to **Disarm / Arm Home / Arm Away** the Home Security System clicking in the variuos states of **Alarm / Status** switch
+  * If you like, I suggest to customize the switches icons
+  * From Domoticz Home Page go into: **Setup --> More Options --> Events** tab
+    * Create the following LUA script:
+      * Event name: **izDomoSecuritySystem**
+      * Method: **LUA**
+      * Type: **Device**
+    * Copy&Paste the **izDomoSecuritySystem.lua** code
+  * Now the most important part: customize the examples and localized variables and your sensors devices (in the example you'll find italian strings)
+    * NB. I suggest to rename your sensors devices using the following naming convention:
+      * Kitchen / Motion
+      * Kitchen / Contact Window
+      * Livin Room / Motion
+      * Livin Room / Contact Main Door
+      * Livin Room / Contact Window 1
+      * Livin Room / Contact Window 2
+      * Bathroom / Motion
+      * Bathroom / Contact Window
+      * so on...
+  * When done, save the edited file and go into **Setup --> Log** tab and look for errors
+  * Try to **Disarm / Arm Home / Arm Away** the Home Security System clicking in the variuos states of **Alarm / Status** switch
+
+#### ImperiHome Configuration
+  * From Layout editor, create a new Switch selecting the "Alarm / Status" switch... this will be configured as "Selector" switch, with the 3 Labels you used when configured Level 0, Level 10 and Level 20
+
+#### Open Problems
+  * commandArray['SecPanel'] doesn't work as release 3.7392 (20170501) because that, this script doesn't use domoticz Security status
+  * globalvariables['Security'] get triggered instantly instead at end of countdown timer, so we must use a intermediate variable to detect states changes
+  * 2 OpenURL inside the same "if" statment doesn't works
+  * ImperiHome support Domoticz Selector Switches, but doesn't works if the names contais spaces, so we must create selector name values without spaces (IMPORTANT)
 
 ### izDomoSecurityTimer.lua
 
