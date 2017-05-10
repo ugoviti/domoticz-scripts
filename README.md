@@ -85,4 +85,4 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
 Timer script for auto activating izDomoSecuritySystem on given day/time   
 
 #### Features
-  * Holidays mode (when activated this a virtual switch, the Auto timer get disabled)
+  * Holidays mode (when activated this virtual switch, the Auto timer get disabled)
