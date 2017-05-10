@@ -19,24 +19,24 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
   * Arm Away (using perimetral and motion sensors to trigger alarms)
   * Support Siren devices when a security violation is confirmed
   * Countdown timer when Arming (so you can close the main door and exit the home before the Home Security System is Armed)
-  * Countdown timer when entering home and the contact sensor get triggered, so you can Disarm the Home Security System before the Siren is turned On)
-  * Various vocal messages using a speaker connected to Domoticz Box or an Tablet with ImperiHome and TTS engine API enables
+  * Countdown timer when entering home and the contact sensor get triggered (so you can Disarm the Home Security System before the Siren is turned On)
+  * Various vocal messages using a speaker connected to Domoticz Box or an Tablet with ImperiHome and TTS engine API enabled
     * Vocal messages when arming, disarming, security breach, siren confirmation, etc...
     * Vocal messages confirming armed state after countdown
   * Multiple and concurrent TTS engine support (ex. ArmingHome go to izsynth, ArmingAway go to ImperiHome tablet)
-  * Translation system for Notifications, Logs and Vocal messages (right now is supported English and Italian only... please make you translation and share with me)
+  * Translation System for Notifications, Logs and Vocal messages (right now is supported English and Italian languages only... please make your translation and share with me)
   * Holidays Mode (used when you don't came back to home for some days and don't want activate auto arming timers)
-  * Validation if all system device exists before using that script
-  * Notify the user during arming countdown, if any of security sensor is already breached
+  * Validation if all system devices exists before using that script (so you can't make mistakes defining sensors names)
+  * Notify the user during arming countdown if any of security sensor is already breached (you can exclude some devices from this check)
   * You can switch between security statuses without waiting arming timer countdown is over
 
 #### Requirements
   * Domoticz (of course ;))
   * Some Contact Sensors (I use a mix of Xiaomi MiHome devices and ZWave Sensors)
-  * Some Motion Sensors
-  * One or more Sirens (I use ZWave Siren)
+  * Some Motion Sensors (I use a mix of Xiaomi MiHome devices and ZWave Sensors)
+  * One or more Sirens (I use ZWave Siren of AeonLab)
   * Suggested: an Android Tablet with ImperiHome Professional (and the TTS engine enabled for voice annuncements)
-  * Otherwise izsynth installed (http://www.domoticz.com/wiki/IzSynth) and a Sound Speaker connected to the RaspberryPi domoticz 2,5 Audio Jack
+  * Otherwise izsynth installed (http://www.domoticz.com/wiki/IzSynth) and a Sound Speaker connected to the (Domoticz Box) RaspberryPi 2,5 Audio Jack
 
 #### Installation
   * Open your Domoticz Home Page URL address
