@@ -2,7 +2,7 @@
 -- A full featured Home Security System for Domoticz Home Automation System (http://www.domoticz.com)
 -- for INSTALL instructions visit: https://github.com/ugoviti/domoticz-scripts
 -- author: Ugo Viti <ugo.viti@initzero.it>
--- version: 20170506
+-- version: 20170511
 
 -- ########################################################################################################
 -- ########################## USER VARIABLES AND CONFIGURATION
