@@ -67,7 +67,7 @@ A full featured Home Security System for Domoticz Home Automation System (http:/
       * Type: **Device**
     * Copy&Paste the **izDomoSecuritySystem.lua** code
   * Now the most important part: customize the examples and localized variables and your sensors devices (in the example you'll find italian strings)
-    * NB. I suggest to rename your sensors devices using the following naming convention:
+    * NB. I suggest to rename your sensors devices using the following naming convention (important is to differentiate **Contact** and **Motion** sensors using a standard naming):
       * Kitchen / Motion
       * Kitchen / Contact Window
       * Livin Room / Motion
