@@ -32,7 +32,8 @@ local oldTemp = tonumber(uservariables["temperatura_esterna"])
 --print ("updated: " .. otherdevices_lastupdate[devSesorTemp].. " difference time: " .. timedifference(otherdevices_lastupdate[devSesorTemp]))
 
 if (timedifference(otherdevices_lastupdate[devSesorTemp]) > 300) then
-    commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSesorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSesorTemp]
+    -- commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSesorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSesorTemp]
+    commandArray['Variable:temperatura_esterna'] = 'ERRORE RICONOSCIMENTO'
 elseif (newTemp ~= oldTemp) then
     print ("Rilevata nuova temperatura esterna: " .. newTemp .. " gradi. Data ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSesorTemp])
     -- os.execute('scripts/izsynth -t "Rilevata nuova temperatura esterna di ' .. newTemp .. 'gradi. La vecchia temperatura era di' .. oldTemp .. 'gradi"')
@@ -43,4 +44,3 @@ elseif (newTemp ~= oldTemp) then
 end
 
 return commandArray
-
