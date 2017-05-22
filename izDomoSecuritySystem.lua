@@ -1,8 +1,8 @@
--- izDomoSecuritySystem
+-- izDomoSecurity System
 -- A full featured Home Security System for Domoticz Home Automation System (http://www.domoticz.com)
 -- for INSTALL instructions visit: https://github.com/ugoviti/domoticz-scripts
 -- author: Ugo Viti <ugo.viti@initzero.it>
--- version: 20170511
+-- version: 20170522
 
 -- ########################################################################################################
 -- ########################## USER VARIABLES AND CONFIGURATION
@@ -61,7 +61,7 @@ local tts = { -- default text to speech engine based on context (valid options: 
 
 function usrDisarm() -- EDIT: use this local function to manage actions when Disarming
 	commandArray['Soggiorno / Applic'] = 'On FOR 1'
-	commandArray['Scene:Soggiorno / LED / Allarme Disattivato'] = 'On'
+	commandArray['Scene:Soggiorno / LED / Allarme Disattivazione'] = 'On'
 end
 
 function usrArmHome() -- EDIT: use this local function to manage actions when Arming Home
@@ -69,12 +69,12 @@ function usrArmHome() -- EDIT: use this local function to manage actions when Ar
 end
 
 function usrArmAway() -- EDIT: use this local function to manage actions when Arming Away
-	commandArray['Group:Gruppo / Luci Casa'] = 'Off' -- turn off all home lights
+	commandArray['Group:Luci Casa'] = 'Off' -- turn off all home lights
     commandArray['Scene:Soggiorno / LED / Allarme Attivazione'] = 'On'
 	commandArray['SetSetPoint:'..otherdevices_idx['Termostato Casa']] = '16' -- change home temperature
 end
 
-function usrViolated() -- EDIT: use this local function to manage devices activated after security Violation is detected
+function usrViolated(devName) -- EDIT: use this local function to manage devices activated after security Violation is detected
     -- EDIT: turn on the following devices
     commandArray['Scene:Soggiorno / LED / Allarme Intrusione'] = 'On'
 
@@ -359,7 +359,7 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
 			talk(msgtr('ALARM_VIOLATED',devName))
             
             -- run user custom action when security violation occour
-            usrViolated()
+            usrViolated(devName)
         elseif (devicechanged[devName] ~= nil) then
             if (logging) then print (msgtr('ALARM_VIOLATED_NFY',devName)) end
 --          commandArray['SendNotification'] = msgtr('ALARM_VIOLATED',devName)
@@ -390,4 +390,3 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
 end
 
 return commandArray
-
