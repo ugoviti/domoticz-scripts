@@ -6,13 +6,13 @@ commandArray = {}
 local domoticzURL    = 'http://localhost:8080' -- domoticz Json API URL
 
 -- Read the temperature from this device
-devSesorTemp = 'Esterno / Temperatura'
+devSensorTemp = 'Esterno / Temperatura'
 
 -- round the temperature value to the nearest integer
 function round(n) return math.floor((math.floor(n*2)+1)/2) end
 
 -- Read the temperature
-local newTemp = round(tonumber(otherdevices_svalues[devSesorTemp]))
+local newTemp = round(tonumber(otherdevices_svalues[devSensorTemp]))
 --local newTemp = round(tonumber('-9.2'))
 
 -- Read the previuous temeperature from this domoticz variable
@@ -32,14 +32,14 @@ local oldTemp = tonumber(uservariables["temperatura_esterna"])
    return difference
  end
 
---print ("updated: " .. otherdevices_lastupdate[devSesorTemp].. " difference time: " .. timedifference(otherdevices_lastupdate[devSesorTemp]))
+--print ("updated: " .. otherdevices_lastupdate[devSensorTemp].. " difference time: " .. timedifference(otherdevices_lastupdate[devSensorTemp]))
 
-if (timedifference(otherdevices_lastupdate[devSesorTemp]) > 300) then
-    -- commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSesorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSesorTemp]
+if (timedifference(otherdevices_lastupdate[devSensorTemp]) > 300) then
+    -- commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSensorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSensorTemp]
     commandArray['Variable:temperatura_esterna_tts'] = 'ATTENZIONE: la temperatura esterna non è aggiornata da ' .. difference .. ' secondi'
     commandArray['Variable:temperatura_esterna'] = '0'
 elseif (newTemp ~= oldTemp) then
-    print ("Rilevata modifica temperatura esterna. Vecchia: " .. oldTemp .. " gradi. Nuova: " .. newTemp .. " gradi. Ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSesorTemp])
+    print ("Rilevata modifica temperatura esterna. Vecchia: " .. oldTemp .. " gradi. Nuova: " .. newTemp .. " gradi. Ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSensorTemp])
     -- os.execute('scripts/izsynth -t "Rilevata nuova temperatura esterna di ' .. newTemp .. 'gradi. La vecchia temperatura era di' .. oldTemp .. 'gradi"')
     -- Imposto la temperatura su questa variabile
     commandArray['Variable:temperatura_esterna'] = tostring(newTemp)
