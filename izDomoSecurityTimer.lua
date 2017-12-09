@@ -1,18 +1,18 @@
 -- izDomoSecurityTimer
 -- A security system for Domoticz Home Automation System (http://www.domoticz.com)
 -- author: Ugo Viti <ugo.viti@initzero.it>
--- version: 20170506
-
--- devAlarm['Status'] valid Levels:
--- Level  0: Disarm
--- Level 10: ArmHome
--- Level 20: ArmAway
+-- version: 20171209
 
 -- domoticz security devices (you must create these virtual hardware switches before saving izDomoSecurity LUA script)
 local devAlarm = {
     Status       = 'Allarme / Stato',      -- Virtual Hardware Type: SELECTOR (0:Off, 10:ArmHome, 20:ArmAway)
     HolidaysMode = 'Modalità Vacanza',     -- Virtual Hardware Type: SWITCH
 }
+
+-- devAlarm['Status'] valid Levels:
+-- Level  0: Disarm
+-- Level 10: ArmHome
+-- Level 20: ArmAway
 
 -- save to a variable the current time and date
 local hour = os.date('%H')

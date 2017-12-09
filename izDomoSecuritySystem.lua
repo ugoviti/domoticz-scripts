@@ -2,7 +2,7 @@
 -- A full featured Home Security System for Domoticz Home Automation System (http://www.domoticz.com)
 -- for INSTALL instructions visit: https://github.com/ugoviti/domoticz-scripts
 -- author: Ugo Viti <ugo.viti@initzero.it>
--- version: 20170522
+-- version: 20171209
 
 -- ########################################################################################################
 -- ########################## USER VARIABLES AND CONFIGURATION
@@ -11,11 +11,11 @@ local alarmCountdown = 30   -- alarm activation countdown timer (in seconds)
 local sirenTime      = 3    -- siren on time (in minutes)
 
 local domoticzURL    = 'http://localhost:8080' -- domoticz Json API URL
-local imperiHomeURLs = {    -- imperihome tablets addresses (used for TTS voices) you can add other URLs to get the same vocal message to all tablets together
+local imperiHomeURLs = {    -- imperihome device addresses (used for TTS voices) you can add other URLs to get the same vocal message to all devices together
     'http://domotablet:8080',
 }
 
-local devSensors = { -- phisical security sensors (rename the following devices according to your domoticz sensors names)
+local devSensors = { -- EDIT: all phisical security sensors (rename the following devices according to your domoticz sensor names)
     'Soggiorno / Contatto Porta Entrata',
     'Soggiorno / Contatto Finestrone 1',
     'Soggiorno / Contatto Finestrone 2',
@@ -25,71 +25,76 @@ local devSensors = { -- phisical security sensors (rename the following devices 
     'Camera / Contatto Finestrone',
     'Cameretta / Contatto Finestrone',
     'Cucina / Movimento',
-    'Bagno / Movimento',
-    'Studio / Movimento',
     'Cameretta / Movimento',
-    'Contatto Test',
+--    'Bagno / Movimento',
+--    'Studio / Movimento',
+--    'Contatto Test',
 }
 
-local devSensorsVerifyArmingExcluded = { -- exclude these device to check Open state when Arming (example: Open the main entrance door, activate the Arm Away selector and close the door exiting the house)
+local devSensorsArmingExcluded = { -- EDIT: exclude these device to check Open state when in Arming state (example: Open the main entrance door, activate the Arm Away selector and close the door exiting the house)
     'Soggiorno / Contatto Porta Entrata',
     'Contatto Test',
 }
 
-local devAlarm = { -- domoticz security devices (you must create these virtual hardware switches before saving izDomoSecurity LUA script)
-    -- hardware security switches
-    Siren        = 'Ripostiglio / Sirena', -- Phisical Siren hardware device
-    -- virtual security swithces (create these devices from Domoticz Hardware Page as Dummy Devices)
-    Status       = 'Allarme / Stato',      -- Virtual Hardware Type: SELECTOR (0:Off, 10:ArmHome, 20:ArmAway)
-    Violated     = 'Allarme / Violato',    -- Virtual Hardware Type: SWITCH
-    Confirmed    = 'Allarme / Confermato', -- Virtual Hardware Type: SWITCH
-    HolidaysMode = 'Modalità Vacanza',     -- Virtual Hardware Type: SWITCH
+local devSirens = { -- EDIT: all phisical sirens hardware device name
+    'Ripostiglio / Sirena',
+    'Cucina / Sirena',
 }
 
-local devAlarmSelector = { -- this MUST MATCH the Selector NAME configured into Virtual Device devAlarm['Status'] (IMPORTANT: don't use spaces for selector values, otherwise ImperiHome doesn't works)
+local devAlarmDevices = { -- domoticz security devices (you must create these virtual hardware switches before saving izDomoSecurity LUA script)
+    -- virtual security swithces (create these devices from Domoticz Hardware Page as Dummy Devices)
+    Status       = 'Allarme / Stato',      -- Virtual Hardware Type: SELECTOR (Values: 0:Off, 10:ArmHome, 20:ArmAway)
+    Violated     = 'Allarme / Violato',    -- Virtual Hardware Type: SWITCH
+    Confirmed    = 'Allarme / Confermato', -- Virtual Hardware Type: SWITCH
+}
+
+local devAlarmSelector = { -- this MUST MATCH the Selector NAME configured into Virtual Device devAlarmDevices['Status'] (IMPORTANT: don't use spaces for selector values, otherwise ImperiHome doesn't works)
     Disarm  = 'Off',            -- For Level:  0
     ArmHome = 'Perimetrale',    -- For Level: 10
     ArmAway = 'Totale'          -- For Level: 20
 }
 
-local tts = { -- default text to speech engine based on context (valid options: imperihome, izsynth)
-    Default = 'imperihome',
+local tts = { -- EDIT: default text to speech engine based on context (valid options: imperihome, izsynth)
+    Default = 'imperihome', -- used if not specified
     Disarm  = 'imperihome',
     ArmHome = 'izsynth',
     ArmAway = 'imperihome'
 }
 
 function usrDisarm() -- EDIT: use this local function to manage actions when Disarming
-	commandArray['Soggiorno / Applic'] = 'On FOR 1'
-	commandArray['Scene:Soggiorno / LED / Allarme Disattivazione'] = 'On'
+	commandArray['Soggiorno / Applic'] = 'On FOR 1' -- turn on this light for 1 minute
+	commandArray['Scene:Soggiorno / LED / Allarme Disattivazione'] = 'On' -- turn on LED strip
 end
 
 function usrArmHome() -- EDIT: use this local function to manage actions when Arming Home
-    commandArray['Scene:Soggiorno / LED / Allarme Attivazione'] = 'On'
+    commandArray['Scene:Soggiorno / LED / Allarme Attivazione'] = 'On' -- turn on LED strip
 end
 
 function usrArmAway() -- EDIT: use this local function to manage actions when Arming Away
 	commandArray['Group:Luci Casa'] = 'Off' -- turn off all home lights
-    commandArray['Scene:Soggiorno / LED / Allarme Attivazione'] = 'On'
+    commandArray['Scene:Soggiorno / LED / Allarme Attivazione'] = 'On' -- turn on LED strip
 	commandArray['SetSetPoint:'..otherdevices_idx['Termostato Casa']] = '16' -- change home temperature
 end
 
-function usrViolated(devName) -- EDIT: use this local function to manage devices activated after security Violation is detected
+function usrViolated(devName) -- EDIT: use this local function to manage devices activated when security violation is detected
     -- EDIT: turn on the following devices
     commandArray['Scene:Soggiorno / LED / Allarme Intrusione'] = 'On'
 
     -- EDIT: actions based on sensor name
     if      (devName == 'Soggiorno / Contatto Porta Entrata') then
-                commandArray['Cucina / Scatta Foto'] = 'On AFTER 5' -- take a photo after 5 seconds
+        commandArray['SendNotification'] = msgtr('ALARM_VIOLATED_NFY',devName)
+        commandArray['SendCamera:1'] = msgtr('ALARM_VIOLATED_NFY',devName)..' AFTER 2'
+        --commandArray['Cucina / Scatta Foto'] = 'On AFTER 5' -- take a photo after 5 seconds
     elseif  (devName == 'Cucina / Movimento') then
-            commandArray['Cucina / Scatta Foto'] = 'On' -- take a photo instantly
-            commandArray['SendNotification'] = msgtr('ALARM_VIOLATED_NFY',devName)
+        commandArray['SendNotification'] = msgtr('ALARM_VIOLATED_NFY',devName)
+        --commandArray['SendCamera:2'] = msgtr('ALARM_VIOLATED_NFY',devName)..' AFTER 2'
+        commandArray['Cucina / Scatta Foto'] = 'On' -- take a photo instantly using that scene
     else
-            -- send notification about sensor violated
-            commandArray['SendNotification'] = msgtr('ALARM_VIOLATED_NFY',devName)
+        -- send notification about sensor violated
+        commandArray['SendNotification'] = msgtr('ALARM_VIOLATED_NFY',devName)
     end
-end        
-            
+end
+
 
 -- ########################## END CONFIGURATION
 -- ########################################################################################################
@@ -124,7 +129,7 @@ function msgtr(text,devName)
         elseif  text == 'ALARM_ARMING_EXCLUDE'then return ('WARNING: Open sensor detected but excluded from the arming check: '..string.gsub(devName, "/ Contact ", " "))
         elseif  text == 'ALARM_ARMING_HOME'   then return ('Arming Home in '..alarmCountdown..' seconds')
         elseif  text == 'ALARM_ARMING_AWAY'   then return ('Arming Away in '..alarmCountdown..' seconds')
-        elseif  text == 'ALARM_ARMED_HOME'    then return ('Armed Home correctly. With a total of '..#devSensors.. ' monitored sensors')
+        elseif  text == 'ALARM_ARMED_HOME'    then return ('Armed Home correctly')
         elseif  text == 'ALARM_ARMED_AWAY'    then return ('Armed Away correctly. With a total of '..#devSensors.. ' monitored sensors')
         elseif  text == 'ALARM_ARMING_STOP'   then return ('Cancelling Arming stage')
         elseif  text == 'ALARM_DISARMING'     then return ('Security system deactivated')
@@ -147,7 +152,8 @@ function msgtr(text,devName)
         elseif  text == 'ALARM_ARMING_EXCLUDE'then return ('ATTENZIONE: Rilevato sensore aperto ma escluso dal check: '..string.gsub(devName, "/ Contatto ", " "))
         elseif  text == 'ALARM_ARMING_HOME'   then return ('Attivazione allarme perimetrale in '..alarmCountdown..' secondi')
         elseif  text == 'ALARM_ARMING_AWAY'   then return ('Attivazione allarme totale in '..alarmCountdown..' secondi')
-        elseif  text == 'ALARM_ARMED_HOME'    then return ('Allarme perimetrale, attivato correttamente. Con un totale di '..#devSensors.. ' sensori monitorati')
+        --elseif  text == 'ALARM_ARMED_HOME'    then return ('Allarme perimetrale, attivato correttamente. Con un totale di '..#devSensors.. ' sensori monitorati')
+        elseif  text == 'ALARM_ARMED_HOME'    then return ('Allarme perimetrale, attivato correttamente')
         elseif  text == 'ALARM_ARMED_AWAY'    then return ('Allarme totale, attivato correttamente. Con un totale di '..#devSensors.. ' sensori monitorati')
         elseif  text == 'ALARM_ARMING_STOP'   then return ('Annullamento attivazione allarme')
         elseif  text == 'ALARM_DISARMING'     then return ('Allarme disattivato')
@@ -155,7 +161,7 @@ function msgtr(text,devName)
         elseif  text == 'ALARM_VIOLATED'      then return ('Sicurezza Violata: ' .. string.gsub(devName, "/ Contatto ", " ") .. '. Disattivare allarme entro '..alarmCountdown..' secondi')
 		elseif  text == 'ALARM_CONFIRMED'     then return ('Intrusione confermata. Attivazione sirena per '..sirenTime..' minuti')
         elseif  text == 'ALARM_VIOLATED_NFY'  then return ('[ALLARME] Sensore Violato: ' .. devName .. ', Stato: ' .. msgtr(devicechanged[devName]))
-		elseif  text == 'ALARM_CONFIRMED_NFY' then return ('[ALLARME] Intrusione Confermata#Attivazione sirena per '..sirenTime..' minuti#0') -- via notification system
+		elseif  text == 'ALARM_CONFIRMED_NFY' then return ('[ALLARME] Intrusione Confermata#Intrusione confermata. Attivazione sirena per '..sirenTime..' minuti#0') -- via notification system
         end
 
     -- failback if no text to translate get identified
@@ -180,10 +186,10 @@ function url_encode(str)
   return str
 end
 
--- imperihome tablet talk via integrated TTS API
+-- imperihome device talk via integrated TTS API
 function tts.imperihome(text)
-    for id, tablet in pairs(imperiHomeURLs) do
-        commandArray['OpenURL'] = tablet..'/api/rest/speech/tts?text='..url_encode(text)
+    for id, ihDevice in pairs(imperiHomeURLs) do
+        commandArray['OpenURL'] = ihDevice..'/api/rest/speech/tts?text='..url_encode(text)
     end
 end
 
@@ -224,7 +230,6 @@ end
 
 -- function to verify if any contact device is in an Open Status
 function verifyDeviceClosed(devIncluded,devExcluded)
-    
     for id, devName in pairs(devIncluded) do
         if (otherdevices[devName] == 'Open') then
             if containsVal(devExcluded,devName) then
@@ -262,13 +267,14 @@ elseif (uservariables['varAlarmAction'] == nil) then createVar("varAlarmAction",
 end
 
 -- verify if virtual devices and the configured sensors exist, else exit from the script
-verifyDeviceExist (devAlarm,'Virtual')
-verifyDeviceExist (devSensors,'Sensor')
+verifyDeviceExist(devAlarmDevices,'Virtual')
+verifyDeviceExist(devSensors,'Sensor')
+verifyDeviceExist(devSirens,'Siren')
 
 
 -- debug and tests go here
 -- log('Debug Message')
--- log('devAlarmSelector = ' .. otherdevices[devAlarm['Status']])
+-- log('devAlarmSelector = ' .. otherdevices[devAlarmDevices['Status']])
 
 --n=0 ; for i, v in pairs( devSensors ) do
 --  n = n + 1
@@ -279,63 +285,65 @@ verifyDeviceExist (devSensors,'Sensor')
 -- ########################################################################################################
 -- ########################## ARMING / DISARMING
 -- disarm during Arming State
-if (devicechanged[devAlarm['Status']] == devAlarmSelector['Disarm'] and (uservariables["varAlarmStatus"] == "Arming Home" or uservariables["varAlarmStatus"] == "Arming Away")) then
+if (devicechanged[devAlarmDevices['Status']] == devAlarmSelector['Disarm'] and (uservariables["varAlarmStatus"] == "Arming Home" or uservariables["varAlarmStatus"] == "Arming Away")) then
     log(msgtr('ALARM_ARMING_STOP'))
 	talk(msgtr('ALARM_ARMING_STOP'))
     varAlarmStatus = 'Disarmed' -- put after talking, if you want use the same tts engine used for arming
 	commandArray['Variable:varAlarmStatus'] = varAlarmStatus
 	commandArray['Variable:varAlarmAction'] = 'Standby AFTER '..alarmCountdown
-	commandArray[devAlarm['Violated']] = 'Off'
-	commandArray[devAlarm['Confirmed']] = 'Off'
-	commandArray[devAlarm['Siren']] = 'Off'
+	commandArray[devAlarmDevices['Violated']] = 'Off'
+	commandArray[devAlarmDevices['Confirmed']] = 'Off'
+	for id, devName in pairs(devSirens) do commandArray[devName] = 'Off' end
+	--commandArray[devAlarmDevices['Siren']] = 'Off'
 	--commandArray['Security Panel'] = 'Disarm'
 
 -- disarm from Armed State
-elseif (devicechanged[devAlarm['Status']] == devAlarmSelector['Disarm']) then
+elseif (devicechanged[devAlarmDevices['Status']] == devAlarmSelector['Disarm']) then
     log(msgtr('ALARM_DISARMING'))
     talk(msgtr('ALARM_DISARMING'))
     varAlarmStatus = 'Disarmed' -- put after talking, if you want use the same tts engine used for arming
     commandArray['Variable:varAlarmStatus'] = varAlarmStatus
     commandArray['Variable:varAlarmAction'] = 'Standby'
-	commandArray[devAlarm['Violated']] = 'Off'
-	commandArray[devAlarm['Confirmed']] = 'Off'
-	commandArray[devAlarm['Siren']] = 'Off'
+	commandArray[devAlarmDevices['Violated']] = 'Off'
+	commandArray[devAlarmDevices['Confirmed']] = 'Off'
+	for id, devName in pairs(devSirens) do commandArray[devName] = 'Off' end
+	--commandArray[devAlarmDevices['Siren']] = 'Off'
 	--commandArray['Security Panel'] = 'Disarm'
     usrDisarm()
 
 -- arm home (ex. when activated by timer)
-elseif (devicechanged[devAlarm['Status']] == devAlarmSelector['ArmHome']) then
+elseif (devicechanged[devAlarmDevices['Status']] == devAlarmSelector['ArmHome']) then
 	varAlarmStatus = 'Arming Home' -- before talking is important to use the right tts engine
     log(msgtr('ALARM_ARMING_HOME'))
-	if verifyDeviceClosed(devSensors,devSensorsVerifyArmingExcluded) then talk(msgtr('ALARM_ARMING_HOME')) end
+	if verifyDeviceClosed(devSensors,devSensorsArmingExcluded) then talk(msgtr('ALARM_ARMING_HOME')) end
 	commandArray['Variable:varAlarmStatus'] = varAlarmStatus
 	commandArray['Variable:varAlarmAction'] = 'Armed Home AFTER '..alarmCountdown
-	commandArray[devAlarm['Violated']] = 'Off'
-	commandArray[devAlarm['Confirmed']] = 'Off'
+	commandArray[devAlarmDevices['Violated']] = 'Off'
+	commandArray[devAlarmDevices['Confirmed']] = 'Off'
 	--commandArray['Security Panel'] = 'Arm Home'
     usrArmHome()
 
 -- arm away (ex. when activated manually)	
-elseif (devicechanged[devAlarm['Status']] == devAlarmSelector['ArmAway']) then
+elseif (devicechanged[devAlarmDevices['Status']] == devAlarmSelector['ArmAway']) then
 	local varAlarmStatus = 'Arming Away' -- before talking is important to use the right tts engine
     log(msgtr('ALARM_ARMING_AWAY'))
-    if verifyDeviceClosed(devSensors,devSensorsVerifyArmingExcluded) then talk(msgtr('ALARM_ARMING_AWAY')) end
+    if verifyDeviceClosed(devSensors,devSensorsArmingExcluded) then talk(msgtr('ALARM_ARMING_AWAY')) end
 	commandArray['Variable:varAlarmStatus'] = varAlarmStatus
 	commandArray['Variable:varAlarmAction'] = 'Armed Away AFTER '..alarmCountdown
-	commandArray[devAlarm['Violated']] = 'Off'
-	commandArray[devAlarm['Confirmed']] = 'Off'
+	commandArray[devAlarmDevices['Violated']] = 'Off'
+	commandArray[devAlarmDevices['Confirmed']] = 'Off'
 	--commandArray['Security Panel'] = 'Arm Away'
     usrArmAway()
 end
 
 -- ########################## ARMED / DISARMED CONFIRMATION
-if (otherdevices[devAlarm['Status']] == devAlarmSelector['ArmHome'] and uservariables['varAlarmAction'] == 'Armed Home') then
+if (otherdevices[devAlarmDevices['Status']] == devAlarmSelector['ArmHome'] and uservariables['varAlarmAction'] == 'Armed Home') then
     log('Attivato Allarme: Armed Home')
     commandArray['Variable:varAlarmStatus'] = 'Armed Home'
     commandArray['Variable:varAlarmAction'] = 'Standby'
     talk(msgtr('ALARM_ARMED_HOME'))
 
-elseif (otherdevices[devAlarm['Status']] == devAlarmSelector['ArmAway'] and uservariables['varAlarmAction'] == 'Armed Away') then
+elseif (otherdevices[devAlarmDevices['Status']] == devAlarmSelector['ArmAway'] and uservariables['varAlarmAction'] == 'Armed Away') then
     log('Attivato Allarme: Armed Away')
     commandArray['Variable:varAlarmStatus'] = 'Armed Away'
     commandArray['Variable:varAlarmAction'] = 'Standby'
@@ -353,7 +361,7 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
         then
             if (logging) then print (msgtr('ALARM_VIOLATED_NFY',devName)) end
             commandArray['Variable:varAlarmAction'] = 'Violated'
-            commandArray[devAlarm['Violated']] = 'On'
+            commandArray[devAlarmDevices['Violated']] = 'On'
 
             -- talk about security violation
 			talk(msgtr('ALARM_VIOLATED',devName))
@@ -363,7 +371,7 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
         elseif (devicechanged[devName] ~= nil) then
             if (logging) then print (msgtr('ALARM_VIOLATED_NFY',devName)) end
 --          commandArray['SendNotification'] = msgtr('ALARM_VIOLATED',devName)
---          commandArray[devAlarm['Violated']] = 'Off'
+--          commandArray[devAlarmDevices['Violated']] = 'Off'
 --          talk(msgtr('ALARM_RESTORED'))
         end
     end
@@ -371,21 +379,23 @@ if (uservariables["varAlarmStatus"] == "Armed Home" or uservariables["varAlarmSt
  -- ########################## ALARM CONFIRMATION AND SIREN ACTIVATION
  -- log('Debug Message')
 
- if     (devicechanged[devAlarm['Violated']] == 'On' and uservariables["varAlarmAction"] == "Violated") then
+ if     (devicechanged[devAlarmDevices['Violated']] == 'On' and uservariables["varAlarmAction"] == "Violated") then
 	commandArray['Variable:varAlarmAction'] = 'Confirmed AFTER '..alarmCountdown-1 -- if the variable get valorized after device activation the siren doens't turn on
-	commandArray[devAlarm['Confirmed']] = 'On AFTER '..alarmCountdown -- this needed to permit disabling siren countdown during warm up timer
- elseif (devicechanged[devAlarm['Confirmed']] == 'Off' and uservariables["varAlarmAction"] == "Confirmed") then -- get triggered when want disarm during violation time
+	commandArray[devAlarmDevices['Confirmed']] = 'On AFTER '..alarmCountdown -- this needed to permit disabling siren countdown during warm up timer
+ elseif (devicechanged[devAlarmDevices['Confirmed']] == 'Off' and uservariables["varAlarmAction"] == "Confirmed") then -- get triggered when want disarm during violation time
     commandArray['Variable:varAlarmAction'] = 'Standby' -- reset varAlarmAction to Standby
- elseif (devicechanged[devAlarm['Confirmed']] == 'On' and uservariables["varAlarmAction"] == "Confirmed") then
+ elseif (devicechanged[devAlarmDevices['Confirmed']] == 'On' and uservariables["varAlarmAction"] == "Confirmed") then
 	commandArray['Variable:varAlarmAction'] = 'Siren'
 	talk(msgtr('ALARM_CONFIRMED'))
-	commandArray[devAlarm['Siren']] = 'On FOR '..sirenTime
- elseif (devicechanged[devAlarm['Siren']] == 'On' and uservariables["varAlarmAction"] == "Siren") then
+	for id, devName in pairs(devSirens) do commandArray[devName] = 'On FOR '..sirenTime end
+	--commandArray[devAlarmDevices['Siren']] = 'On FOR '..sirenTime
+-- elseif (devicechanged[devAlarmDevices['Siren']] == 'On' and uservariables["varAlarmAction"] == "Siren") then
+   elseif (devicechanged[devSirens[1]] == 'On' and uservariables["varAlarmAction"] == "Siren") then
     commandArray['Variable:varAlarmAction'] = 'Siren for '..sirenTime..' minutes'
 	commandArray['SendNotification'] = msgtr('ALARM_CONFIRMED_NFY')
 	-- reset security virtual devices
-	commandArray[devAlarm['Violated']] = 'Off'
-    commandArray[devAlarm['Confirmed']] = 'Off'
+	commandArray[devAlarmDevices['Violated']] = 'Off'
+    commandArray[devAlarmDevices['Confirmed']] = 'Off'
  end
 end
 

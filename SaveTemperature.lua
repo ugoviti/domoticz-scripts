@@ -3,6 +3,8 @@
 -- NB. questo script gira ogni minuto
 commandArray = {}
 
+local domoticzURL    = 'http://localhost:8080' -- domoticz Json API URL
+
 -- Read the temperature from this device
 devSesorTemp = 'Esterno / Temperatura'
 
@@ -11,11 +13,12 @@ function round(n) return math.floor((math.floor(n*2)+1)/2) end
 
 -- Read the temperature
 local newTemp = round(tonumber(otherdevices_svalues[devSesorTemp]))
+--local newTemp = round(tonumber('-9.2'))
 
 -- Read the previuous temeperature from this domoticz variable
 local oldTemp = tonumber(uservariables["temperatura_esterna"])
 
--- Calc then difference time from device updates
+-- Calc the difference time from device updates
  function timedifference(s)
    year = string.sub(s, 1, 4)
    month = string.sub(s, 6, 7)
@@ -33,12 +36,16 @@ local oldTemp = tonumber(uservariables["temperatura_esterna"])
 
 if (timedifference(otherdevices_lastupdate[devSesorTemp]) > 300) then
     -- commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSesorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSesorTemp]
-    commandArray['Variable:temperatura_esterna'] = 'ERRORE RICONOSCIMENTO'
+    commandArray['Variable:temperatura_esterna_tts'] = 'ATTENZIONE: la temperatura esterna non è aggiornata da ' .. difference .. ' secondi'
+    commandArray['Variable:temperatura_esterna'] = '0'
 elseif (newTemp ~= oldTemp) then
-    print ("Rilevata nuova temperatura esterna: " .. newTemp .. " gradi. Data ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSesorTemp])
+    print ("Rilevata modifica temperatura esterna. Vecchia: " .. oldTemp .. " gradi. Nuova: " .. newTemp .. " gradi. Ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSesorTemp])
     -- os.execute('scripts/izsynth -t "Rilevata nuova temperatura esterna di ' .. newTemp .. 'gradi. La vecchia temperatura era di' .. oldTemp .. 'gradi"')
     -- Imposto la temperatura su questa variabile
     commandArray['Variable:temperatura_esterna'] = tostring(newTemp)
+    commandArray['Variable:temperatura_esterna_tts'] = 'La temperatura esterna è di ' .. newTemp .. ' gradi'
+    -- Send Kodi Notification
+    commandArray['SendNotification'] = 'Temperatura Esterna: '..newTemp..'°#Attuale: '..newTemp..'°\nPrecedente: '..oldTemp..'°#0###kodi'
     --else
     --  print ("Nuova Temperatura uguale alla vecchia: " .. newTemp .. " gradi" )
 end
