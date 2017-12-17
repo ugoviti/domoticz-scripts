@@ -16,10 +16,10 @@ local newTemp = round(tonumber(otherdevices_svalues[devSensorTemp]))
 --local newTemp = round(tonumber('-9.2'))
 
 -- Read the previuous temeperature from this domoticz variable
-local oldTemp = tonumber(uservariables["temperatura_esterna"])
+local oldTemp = uservariables["temperatura_esterna"]
 
 -- Calc the difference time from device updates
- function timedifference(s)
+function timedifference(s)
    year = string.sub(s, 1, 4)
    month = string.sub(s, 6, 7)
    day = string.sub(s, 9, 10)
@@ -37,7 +37,7 @@ local oldTemp = tonumber(uservariables["temperatura_esterna"])
 if (timedifference(otherdevices_lastupdate[devSensorTemp]) > 300) then
     -- commandArray['SendNotification'] = 'ATTENZIONE: Il sensore di temperatura: ' .. devSensorTemp .. ' non invia aggiornamenti dalla data: ' .. otherdevices_lastupdate[devSensorTemp]
     commandArray['Variable:temperatura_esterna_tts'] = 'ATTENZIONE: la temperatura esterna non è aggiornata da ' .. difference .. ' secondi'
-    commandArray['Variable:temperatura_esterna'] = '0'
+    commandArray['Variable:temperatura_esterna'] = 'ERRORE LETTURA'
 elseif (newTemp ~= oldTemp) then
     print ("Rilevata modifica temperatura esterna. Vecchia: " .. oldTemp .. " gradi. Nuova: " .. newTemp .. " gradi. Ultimo aggiornamento ricevuto dal device: " .. otherdevices_lastupdate[devSensorTemp])
     -- os.execute('scripts/izsynth -t "Rilevata nuova temperatura esterna di ' .. newTemp .. 'gradi. La vecchia temperatura era di' .. oldTemp .. 'gradi"')
@@ -47,7 +47,7 @@ elseif (newTemp ~= oldTemp) then
     -- Send Kodi Notification
     commandArray['SendNotification'] = 'Temperatura Esterna: '..newTemp..'°#Attuale: '..newTemp..'°\nPrecedente: '..oldTemp..'°#0###kodi'
     --else
-    --  print ("Nuova Temperatura uguale alla vecchia: " .. newTemp .. " gradi" )
+    --print ("Nuova Temperatura uguale alla vecchia: " .. newTemp .. " gradi" )
 end
 
 return commandArray
