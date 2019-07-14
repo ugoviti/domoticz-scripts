@@ -54,11 +54,13 @@ local devAlarmSelector = { -- this MUST MATCH the Selector NAME configured into 
     ArmAway = 'Totale'          -- For Level: 20
 }
 
-local tts = { -- EDIT: default text to speech engine based on context (valid options: imperihome, izsynth)
-    Default = 'imperihome', -- used if not specified
-    Disarm  = 'imperihome',
+local externalScript = '/home/pi/domoticz/scripts/myttsscript.sh' -- external tts script engine (please make sure that accept only one argument as the TTS Text to syntesize)
+
+local tts = { -- EDIT: default text to speech engine based on context (valid options: imperihome, izsynth, externalScript)
+    Default = 'izsynth', -- used if not specified
+    Disarm  = 'izsynth',
     ArmHome = 'izsynth',
-    ArmAway = 'imperihome'
+    ArmAway = 'izsynth'
 }
 
 function usrDisarm() -- EDIT: use this local function to manage actions when Disarming
@@ -196,6 +198,10 @@ end
 -- direct sound card domoticz talk via izsynth script (https://www.domoticz.com/wiki/IzSynth)
 function tts.izsynth(text)
     os.execute('scripts/izsynth -t "'..text..'"')
+end
+
+function tts.externalScript(text)
+    os.execute(externalScript..' "'..text..'"')
 end
 
 -- syntesize text using the specified TTS engine based of alarm context
