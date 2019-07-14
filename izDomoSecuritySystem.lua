@@ -201,7 +201,7 @@ function tts.izsynth(text)
 end
 
 function tts.externalScript(text)
-    os.execute(externalScript..' "'..text..'"')
+    os.execute(externalScript..'"'..text..'"')
 end
 
 -- syntesize text using the specified TTS engine based of alarm context
