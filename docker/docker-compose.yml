@@ -1,0 +1,87 @@
+version: "2.1"
+
+#networks:
+#  domoticz:
+
+services:
+  domoticz:
+    container_name: domoticz
+    #image: linuxserver/domoticz
+    build: ./build/domoticz
+    depends_on:
+      vhclient:
+        condition: service_healthy
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Rome
+    volumes:
+    - /dev:/dev
+    - ./data/domoticz:/config
+    ports:
+    - 8080:8080
+    - 6144:6144
+    - 1443:1443
+    privileged: true
+    restart: unless-stopped
+    network_mode: host
+    #networks:
+    #- domoticz
+
+  mydomoathome:
+    container_name: mydomoathome
+    image: epierre/iss-mdah
+    depends_on:
+    - domoticz
+    environment:
+    - PUID=1000
+    - PGID=1000
+    - TZ=Europe/Rome
+    - DOMO=http://domo01:8080
+    ports:
+    - 3002:3002
+    restart: unless-stopped
+    network_mode: host
+    #networks:
+    #- domoticz
+
+  deconz:
+    container_name: deconz
+    image: marthoc/deconz
+    depends_on:
+      vhclient:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+    - /dev:/dev
+    - /etc/localtime:/etc/localtime:ro
+    - ./data/deconz:/root/.local/share/dresden-elektronik/deCONZ
+    privileged: true
+    environment:
+    - DECONZ_WEB_PORT=8081
+    - DECONZ_WS_PORT=4431
+    - DEBUG_INFO=1
+    - DEBUG_APS=0
+    - DEBUG_ZCL=0
+    - DEBUG_ZDP=0
+    - DEBUG_OTAU=0
+    - DECONZ_DEVICE=/dev/ttyACM1
+    network_mode: host
+
+  vhclient:
+    container_name: vhclient
+    image: virtualhere/virtualhere-client
+    command: /vhclientx86_64 -c /etc/vhclient/vhclient.conf
+    restart: unless-stopped
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ./data/vhclient:/etc/vhclient:rw
+    devices:
+    - /dev:/dev
+    privileged: true
+    network_mode: host
+    healthcheck:
+      test: ["CMD", "./vhclientx86_64", "-t", "LIST", "|", "grep", "In-use"]
+      interval: 30s
+      timeout: 10s
+      retries: 5 
